@@ -4,12 +4,15 @@
 #include <cstdlib>
 #include <iostream>
 #include <keycodes.h>
-#define null NULL // I'm just used to it being lowercase
-
 using namespace std;
+
+#define null NULL // I'm just used to it being lowercase
 typedef void (event)();
 
 HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+
+
 
 
 
@@ -74,7 +77,8 @@ void enableEscapeSequences()
 {
     if (handle == INVALID_HANDLE_VALUE)
     {
-        while(1) echo("\n");
+        printf("ERROR: Invalid handle value returned from GetStdHandle(STD_OUTPUT_HANDLE) (%d)\n", STD_OUTPUT_HANDLE);
+        exit(1);
     }
 
     // Get the existing console flags
@@ -154,22 +158,23 @@ void runMenuLoop (char* outputLoop[], size_t outputArrayLen, event* eventHandler
 
     int reply;
     bool isSpecialKey;
-
+    char* prepend;
+    
     while (true)
     {
         echo(title);
-
+        
         for (int i = 0; i < outputArrayLen; i++)
         {
             if (SelectionIndex == i)
             {
-                _echo("> ");
+                prepend = "> ";
             }
             else {
-                _echo("  ");
+                prepend = "  ";
             }
 
-            echo (outputLoop[i]);
+            printf ("%s%s\n", prepend, outputLoop[i]);
         }
         echo("\n"); // Add some spacing so printed text isn't immediately overwritten by the menu
 
@@ -217,24 +222,25 @@ void runMenuLoop (char* outputLoop[], size_t outputArrayLen, event* eventHandler
 
                 
             case ASCIIKeyCodes::ENTER:
+                printf("%s\n", typeid(*eventHandlers[SelectionIndex]).name());
+
                 if (SelectionIndex < handlerArrayLen && eventHandlers[SelectionIndex] != NULL)
                 {
                     eventHandlers[SelectionIndex]();
                 }
-                else
-                {
+                else {
                     printf("\nNull function ptr for item #%d.", SelectionIndex);
                 }
                 break;
 
 
 
+
             // Off we fuck
-            case ASCIIKeyCodes::ESCAPE: return;
-        
-                
+            case ASCIIKeyCodes::ESCAPE:
+                return;
+
             default:
-                printf("SKey: %d", reply);
                 goto read;
         }
 
